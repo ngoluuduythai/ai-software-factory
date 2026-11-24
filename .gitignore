@@ -1,0 +1,15 @@
+# Factory runtime state: never committed, survives branch switches.
+factory/board.json
+factory/jobs/
+
+# Git worktrees created per job.
+/.worktrees/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Editors and OS
+.DS_Store
+*.swp

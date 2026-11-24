@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software Factory — Board</title>
+<style>
+  :root { --ink: #e6e6e6; --dim: #9a9a9a; --card: #1c1c22; --line: #33333c;
+          --pink: #ff8fb3; --pink-bg: #3a1f2a; --green: #7ddc8f; --amber: #ffcf6e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #111114; color: var(--ink);
+         font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; color: var(--dim); font-size: 13px; }
+  header code { color: var(--ink); }
+  main { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; padding: 16px 20px; }
+  .col h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+            color: var(--dim); margin: 0 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+          padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+  .card:hover { border-color: #55555f; }
+  .card .title { font-size: 14px; font-weight: 600; }
+  .card .meta { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .card.needs-human { background: var(--pink-bg); border-color: var(--pink); }
+  .card.needs-human .title { color: var(--pink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .chip { font-size: 11px; border: 1px solid var(--line); border-radius: 999px;
+          padding: 2px 8px; color: var(--dim); }
+  .chip.pass { color: var(--green); border-color: var(--green); }
+  .chip.changes { color: var(--amber); border-color: var(--amber); }
+  .cmd { font-size: 12px; color: var(--pink); margin-top: 8px; }
+  .cmd code { background: #111114; padding: 1px 5px; border-radius: 4px; }
+  #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%);
+            background: #17171b; border-left: 1px solid var(--line); padding: 20px;
+            overflow-y: auto; display: none; }
+  #drawer.open { display: block; }
+  #drawer h2 { margin-top: 0; font-size: 18px; }
+  #drawer h3 { font-size: 14px; color: var(--dim); margin: 20px 0 6px; }
+  #drawer pre { white-space: pre-wrap; word-wrap: break-word; background: #111114;
+                border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+                font-size: 13px; line-height: 1.5; }
+  #drawer button { background: none; border: 1px solid var(--line); color: var(--ink);
+                   border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  .empty { color: var(--dim); font-size: 13px; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    main { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Software Factory</h1>
+  <p>One self-contained page. Serve this folder with
+    <code>python3 -m http.server</code> and open
+    <code>localhost:8000/dashboard.html</code>. State lives in
+    <code>board.json</code>; job files live under <code>jobs/&lt;id&gt;/</code>.</p>
+</header>
+<main id="board"></main>
+<aside id="drawer">
+  <button id="close">Close</button>
+  <h2 id="drawer-title"></h2>
+  <div id="drawer-body"></div>
+</aside>
+<script>
+const PHASES = ["spec", "build", "review", "approve", "merged", "needs-human"];
+const LABELS = { spec: "Spec", build: "Build", review: "Review",
+                 approve: "Approve", merged: "Merged", "needs-human": "Needs human" };
+
+async function loadBoard() {
+  const res = await fetch("board.json");
+  if (!res.ok) throw new Error("board.json not found. Run the factory once, or copy board.example.json to board.json.");
+  return res.json();
+}
+
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function cardHtml(job) {
+  const rounds = (job.rounds || []).map((r, i) => {
+    const chips = (r.reviews || []).map(v =>
+      `<span class="chip ${v.verdict === "PASS" ? "pass" : "changes"}">${esc(v.reviewer)}: ${esc(v.verdict)}</span>`).join("");
+    return `<div class="chips"><span class="chip">round ${i + 1}</span>${chips}</div>`;
+  }).join("");
+  const cmd = job.phase === "needs-human"
+    ? `<div class="cmd"><code>/factory approve ${esc(job.id)}</code> &nbsp; <code>/factory rework ${esc(job.id)} &lt;note&gt;</code></div>` : "";
+  return `<article class="card ${job.phase === "needs-human" ? "needs-human" : ""}" data-id="${esc(job.id)}">
+    <div class="title">${esc(job.title)}</div>
+    <div class="meta">${esc(job.id)} &middot; ${esc(job.branch || "")}</div>
+    ${rounds}${cmd}
+  </article>`;
+}
+
+async function openDrawer(job) {
+  document.getElementById("drawer-title").textContent = job.title + " — " + job.id;
+  const body = document.getElementById("drawer-body");
+  body.innerHTML = "<p class='empty'>Loading job files…</p>";
+  document.getElementById("drawer").classList.add("open");
+  const files = ["spec.md", "build.md", "decision.md"];
+  (job.rounds || []).forEach((r, i) => {
+    (r.reviews || []).forEach(v => files.push(`round-${i + 1}/review-${v.reviewer}.md`));
+  });
+  let html = "";
+  for (const f of files) {
+    try {
+      const res = await fetch(`jobs/${job.id}/${f}`);
+      if (!res.ok) continue;
+      html += `<h3>${esc(f)}</h3><pre>${esc(await res.text())}</pre>`;
+    } catch (e) { /* file not present yet */ }
+  }
+  body.innerHTML = html || "<p class='empty'>No job files yet.</p>";
+}
+
+async function main() {
+  const boardEl = document.getElementById("board");
+  let board;
+  try {
+    board = await loadBoard();
+  } catch (e) {
+    boardEl.innerHTML = `<p class="empty">${esc(e.message)}</p>`;
+    return;
+  }
+  const jobs = board.jobs || [];
+  boardEl.innerHTML = PHASES.map(p => {
+    const inPhase = jobs.filter(j => j.phase === p);
+    const cards = inPhase.map(cardHtml).join("") || `<p class="empty">Nothing here.</p>`;
+    return `<section class="col"><h2>${LABELS[p]}</h2>${cards}</section>`;
+  }).join("");
+  boardEl.querySelectorAll(".card").forEach(el => {
+    el.addEventListener("click", () => {
+      const job = jobs.find(j => j.id === el.dataset.id);
+      if (job) openDrawer(job);
+    });
+  });
+}
+
+document.getElementById("close").addEventListener("click", () =>
+  document.getElementById("drawer").classList.remove("open"));
+main();
+</script>
+</body>
+</html>
