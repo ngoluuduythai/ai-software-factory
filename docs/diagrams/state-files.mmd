@@ -1,0 +1,34 @@
+---
+title: Files hold the state
+source: Mind-map node "Files hold the state", t=1:05; loop rules in the bootstrap prompt, t=4:50
+status: reconstructed from narration - the video states these rules but never draws this data-flow diagram
+---
+
+flowchart LR
+    subgraph Human["Human"]
+        H["/factory feature<br/>/factory next<br/>/factory approve<br/>/factory rework"]
+    end
+    subgraph Orchestrator["Orchestrator - one Claude Code session"]
+        O["Runs the loop<br/>Spawns every agent<br/>Only writer of factory/board.json"]
+    end
+    subgraph Agents["Subagents - context from files, not conversation"]
+        S["specwriter (Opus)<br/>writes spec.md"]
+        B["builder (Opus)<br/>writes build.md + code"]
+        R["reviewers<br/>write round-N/review-*.md"]
+        A["approver (Opus)<br/>writes decision.md"]
+    end
+    subgraph State["Files hold the state"]
+        J["factory/jobs/JOB-ID/<br/>spec.md, build.md, decision.md,<br/>round-N/review-*.md"]
+        BJ["factory/board.json<br/>jobs, stage, round, reviews"]
+        BL["factory/backlog.md"]
+        D["factory/dashboard.html<br/>polls board.json"]
+    end
+    H --> O
+    O --> S & B & R & A
+    S --> J
+    B --> J
+    R --> J
+    A --> J
+    O --> BJ
+    BJ --> D
+    BL --> O

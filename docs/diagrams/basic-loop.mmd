@@ -1,0 +1,12 @@
+---
+title: The basic agentic loop
+source: On screen in the video, t=3:15 (the "Agentic software factory 101" node of the mind map)
+status: verbatim - redrawn from the on-screen diagram
+---
+
+flowchart LR
+    trigger["Trigger<br/>GitHub issue, Linear/Jira ticket,<br/>Slack message, cron schedule,<br/>incident or error alert"] --> sandbox["Sandbox<br/>fresh clone per run,<br/>destroyed when done"]
+    sandbox --> agent["Agent<br/>plans, writes,<br/>and tests the change"]
+    agent --> checks["Checks<br/>repo tests and lint,<br/>code and secret scanning"]
+    checks --> pr["Pull request<br/>diff plus evidence:<br/>test results, traces,<br/>preview environment"]
+    pr --> merge["(Human) merge<br/>human gates:<br/>approve the spec,<br/>approve the merge"]

@@ -1,0 +1,19 @@
+---
+title: The factory line
+source: On screen in the video, t=1:05-1:50 (the "The factory line" node of the mind map)
+status: verbatim - redrawn from the on-screen diagram
+---
+
+flowchart LR
+    spec["Spec writer<br/>Opus"] --> builder["Builder<br/>Opus"]
+    builder --> sec["Security review<br/>Opus"]
+    builder --> ux["UX review<br/>Sonnet"]
+    builder --> ui["UI design review<br/>Sonnet"]
+    builder --> code["Code review<br/>Sonnet"]
+    sec --> approver["Approver<br/>Opus"]
+    ux --> approver
+    ui --> approver
+    code --> approver
+    approver -->|"low risk"| merge["Merge to main"]
+    approver -->|"escalate"| human["Needs human<br/>/factory approve"]
+    sec & ux & ui & code -. "CHANGES: orchestrator resumes builder (max 2)" .-> builder

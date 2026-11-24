@@ -47,6 +47,18 @@ A job gets at most three review rounds (`MAX_RESUMES = 2` in
 `factory/config.json`). If round 3 still has changes, the orchestrator
 writes an `ESCALATE` decision itself and the job waits for a human.
 
+## Diagrams
+
+The video's diagrams, redrawn in Mermaid — see
+[docs/DIAGRAMS.md](docs/DIAGRAMS.md):
+
+- the full video mind map, the factory line, and the basic agentic
+  loop, all verbatim from the on-screen frames;
+- a history timeline, a job lifecycle, a state-files data flow, and a
+  job-001 sequence diagram, reconstructed from the narration.
+
+GitHub renders the `.mmd` files in `docs/diagrams/` natively.
+
 ## Quickstart
 
 ### In Claude Code (live, as in the video)
@@ -116,6 +128,8 @@ demo-site/                  Demo target: a static course site (25 lessons)
 examples/
   jobs/001-obsidian-course-unpaywall/   The video's sample job, completed
 docs/VIDEO_MAP.md           Every part traced to a video timestamp
+docs/DIAGRAMS.md            Every diagram, with timestamps
+docs/diagrams/              Mermaid redraws of the video's diagrams
 tests/test_factory.py       Unit + end-to-end dry-run tests
 ```
 

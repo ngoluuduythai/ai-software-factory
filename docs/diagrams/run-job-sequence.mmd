@@ -1,0 +1,27 @@
+---
+title: Run the factory - job 001 end to end
+source: Mind-map node "2. Run the factory", t=1:05; job 001 run on screen, t=17:12-22:10
+status: reconstructed from narration - the video shows the job running in the terminal and on the dashboard, but never draws this sequence diagram
+---
+
+sequenceDiagram
+    autonumber
+    actor Human
+    participant Orch as Orchestrator
+    participant Spec as specwriter (Opus)
+    participant Build as builder (Opus)
+    participant Rev as 4 reviewers
+    participant Appr as approver (Opus)
+    Human->>Orch: /factory "Obsidian course unpaywall"
+    Orch->>Spec: spawn, write spec.md
+    Spec-->>Orch: spec.md ready
+    Orch->>Build: spawn builder-001 on factory/001 branch
+    Build-->>Orch: build.md + code committed
+    Orch->>Rev: spawn 4 reviewers in parallel (round 1)
+    Rev-->>Orch: review files - all PASS
+    Orch->>Appr: spawn approver
+    Appr-->>Orch: decision.md - ESCALATE (course access)
+    Orch-->>Human: job waits in needs-human
+    Human->>Orch: /factory approve 001-obsidian-course-unpaywall
+    Orch->>Orch: merge --no-ff into main, delete branch + worktree
+    Orch-->>Human: merged, 4 commits ahead on main

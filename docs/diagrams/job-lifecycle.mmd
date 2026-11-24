@@ -1,0 +1,24 @@
+---
+title: Job lifecycle - a job across the board
+source: Dashboard columns on screen, t=18:05; loop rules in the bootstrap prompt, t=4:50; narration t=5:12-5:40
+status: reconstructed from narration - the video shows the board columns and states the rules, but never draws this state diagram
+---
+
+stateDiagram-v2
+    [*] --> Backlog : /factory next picks the first unchecked item
+    Backlog --> Spec : specwriter (Opus) writes spec.md
+    Spec --> Build : builder (Opus) builds on factory/JOB-ID
+    Build --> Review : 4 reviewers run in parallel
+    Review --> Build : CHANGES - orchestrator resumes builder (max 2 resumes)
+    Review --> Approve : all 4 reviews PASS
+    Approve --> Merged : approver says MERGE - merge --no-ff into main
+    Approve --> NeedsHuman : approver says ESCALATE
+    NeedsHuman --> Merged : /factory approve JOB-ID
+    NeedsHuman --> Build : /factory rework JOB-ID "note" - a new builder round
+    Merged --> [*]
+
+    note right of Review
+        Round 3 still has CHANGES:
+        the orchestrator writes
+        ESCALATE itself
+    end note

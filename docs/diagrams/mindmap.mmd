@@ -1,0 +1,103 @@
+---
+title: The video mind map
+source: On screen in the video, t=0:41-3:46
+status: verbatim - redrawn from the on-screen mind map
+---
+
+mindmap
+  root((Build Your Own AI Software Factory with Claude Code))
+    Goals
+      Learn what a software factory is
+      Build your own in a real, working project
+    What is a software factory?
+      The earliest well-documented ancestor is Robert W. Bemer at General Electric in 1968
+      essentially a computer-controlled programming environment
+      containing standardized development tools
+      along with historical information
+      for management and measurement
+    A short history
+      1968 - The idea is proposed
+        Bob Bemer - a factory to boost programmer productivity with standardized tools and data for management controls
+      1969 - Hitachi opens the first software factory
+        A whole software organization run like a factory
+        Goal - high-quality software in great quantity
+      2000s - Factory as an assembly kit
+        Apps assembled from reusable patterns, models, and frameworks
+      2010s-2020s - Factory as a delivery pipeline
+        People, tools, and processes for continuous delivery
+        CI/CD, automated tests, security checks
+      Now - Agentic factories
+        AI agents plan, write, test, and review the code
+    Agentic software factory 101
+      What is new is automation of relatively unstructured cognitive work between the deterministic stages
+      trigger, sandbox, agent, checks, PR, human merge
+      Triggers
+        GitHub issues, Linear/Jira tickets, Slack messages, cron schedules
+        Incidents and error alerts - e.g. Sentry
+      Diagnostics pulled in automatically
+        Stack traces, logs, metrics, and affected releases handed to the agent - e.g. Sentry over MCP
+      Isolation
+        A fresh sandbox per run - clones the repo, destroyed when done
+        Lets many agents work in parallel
+      Verification
+        The repo's own tests and checks, plus code and secret scanning
+        A real browser can drive UI changes
+      Pull request
+        The diff plus evidence - test results, traces, a preview environment
+      Human gates
+        Approve the spec before code exists
+        Approve the merge before it ships
+      Audit trail
+        Every agent session and tool call is saved
+      In the wild
+        About 30% of merged PRs at Ramp come from its internal agent
+        11% of PRs at Uber are opened by agents
+    Claude Code demo
+      Build a software factory inside my zazencodes.com codebase
+    Our simple agentic software factory
+      A team of AI agents that takes a feature from idea to merged code
+      Each agent has one job
+        Write the spec
+        Build it
+        Review it
+        Approve it
+    The factory line
+      Spec writer Opus, Builder Opus, 4 reviews in parallel, Approver Opus
+      CHANGES - orchestrator resumes builder, max 2
+      Low risk - Merge to main
+      Escalate - Needs human, /factory approve
+    The orchestrator
+      One Claude Code session runs the /factory skill and becomes the orchestrator
+      Runs the loop
+      Spawns every agent
+      Only writer of factory/board.json
+    Files hold the state
+      Agents get context from files, not the conversation
+      Each agent writes only its own file
+    The dashboard
+      Jobs are cards moving across the loop's stages
+      Each review round shows as a row of reviewer chips that fill in as verdicts land
+      needs-human jobs stand out
+      Click a card to read its markdown files
+    1. Build the factory
+      Paste the build prompt into Claude Code
+      A Claude Code skill, subagents, and markdown files
+      Keep it small - a viewer should understand the whole thing in a few minutes
+    2. Run the factory
+      /factory my obsidian agent setup course pages should not be paywalled, ONLY the videos are paywalled
+      Spec writer drafts the spec, Opus
+      Builder builds it on a feature branch, Opus
+      4 reviewers run in parallel, 1 Opus, 3 Sonnet
+      Approver merges to main, or sends the job to needs-human
+    Commands
+      /factory feature - run a new job through the loop
+      /factory next - run the first unchecked item in backlog.md
+      /factory approve job-id - merge a needs-human job into main
+      /factory rework job-id note - send a job back to the builder with feedback
+    Limitations and next steps
+      Git worktrees added so several jobs run in parallel
+      GitHub Issues as input, or a trigger from Slack
+      Connect app metrics, e.g. Sentry, so production bugs flow in with context
+      Watch after deploy - roll back a shipped feature that breaks something
+    Newsletter
+      Sign up to get this mind map as a high-quality PNG
